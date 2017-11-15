@@ -148,19 +148,19 @@
                         endDate = new Date(end);
 
                     if (pacingType === 'self_paced') {
-                        dateString = 'Self-paced';
-                        if (start && startDate > now) {
-                            dateString += ' - Starts ' + start;
+                        dateString = '(Self-paced) ';
+                        if (start) {
+                            dateString +=  startDate > now ? ('Starts ' + start) : ('Started ' + start);
                         } else if (end && endDate > now) {
-                            dateString += ' - Ends ' + end;
+                            dateString += 'Ends ' + end;
                         } else if (end && endDate < now) {
-                            dateString += ' - Ended ' + end;
+                            dateString += 'Ended ' + end;
                         }
                     } else {
                         if (start && end) {
                             dateString = start + ' - ' + end;
                         } else if (start) {
-                            dateString = 'Starts ' + start;
+                            dateString =  startDate > now ? ('Starts ' + start) : ('Started ' + start);
                         } else if (end) {
                             dateString = 'Ends ' + end;
                         }

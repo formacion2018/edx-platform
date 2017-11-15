@@ -1,5 +1,5 @@
 /**
- *  Store data for the current state of the course entitlement
+ *  Store data for the current
  */
 (function(define) {
     'use strict';
@@ -10,7 +10,10 @@
         function(Backbone) {
             return Backbone.Model.extend({
                 defaults: {
+                    availableSessions: [],
+                    entitlementUUID: '',
                     currentSessionId: '',
+                    userId: ''
                 }
             });
         }

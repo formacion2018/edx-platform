@@ -284,13 +284,15 @@ from util.course import get_link_for_about_page, get_encoded_course_sharing_utm_
           EntitlementFactory({
               $el: $('#course-card-${course_card_index} .course-entitlement-selection-container'),
               $triggerOpenBtn: $('#course-card-${course_card_index} .change-session'),
+              $courseTitleLink: $('#course-card-${course_card_index} .course-title'),
               $dateDisplayField: $('#course-card-${course_card_index} .info-date-block'),
               $enterCourseBtn: $('#course-card-${course_card_index} .enter-course'),
               availableSessions: '${ entitlement_available_sessions | n, dump_js_escaped_json }',
               entitlementUUID: '${ entitlement.course_uuid | n, js_escaped_string }',
               currentSessionId: '${ entitlement_session.course_id if entitlement_session else '' | n, js_escaped_string }',
               userId: '${ user.id | n, js_escaped_string }',
-              enrollUrl: '${reverse('enrollment_api:courseenrollments') | n, js_escaped_string }'
+              enrollUrl: '${reverse('enrollment_api:courseenrollments') | n, js_escaped_string }',
+              courseHomeUrl: '${ course_target | n, js_escaped_string }'
           });
         </%static:require_module>
       %endif

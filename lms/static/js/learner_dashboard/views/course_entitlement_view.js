@@ -5,8 +5,10 @@
         'jquery',
         'underscore',
         'gettext',
+        'moment',
         'edx-ui-toolkit/js/utils/html-utils',
         'js/learner_dashboard/models/course_entitlement_model',
+        'js/learner_dashboard/models/course_card_model',
         'text!../../../templates/learner_dashboard/course_entitlement.underscore'
     ],
          function(
@@ -14,8 +16,10 @@
              $,
              _,
              gettext,
+             moment,
              HtmlUtils,
              EntitlementModel,
+             CourseCardModel,
              pageTpl
          ) {
              return Backbone.View.extend({
@@ -30,21 +34,26 @@
 
                  initialize: function(options) {
                      this.$el = options.$el;
+
+                     // Set up models and reload view on change
+                     this.courseCardModel = new CourseCardModel();
                      this.entitlementModel = new EntitlementModel({
                          availableSessions: this.formatDates(JSON.parse(options.availableSessions)),
                          entitlementUUID: options.entitlementUUID,
                          currentSessionId: options.currentSessionId,
                          userId: options.userId
                      });
-                     this.listenTo(this.model, "change", this.render);
+                     this.listenTo(this.entitlementModel, 'change', this.render);
 
-                     // Grab URLs that handle enrollment, unenrollment and changing of enrollment
+                     // Grab URLs that handle changing of enrollment and entering a newly enrolled session.
                      this.enrollUrl = options.enrollUrl;
+                     this.courseHomeUrl = options.courseHomeUrl;
 
                      // Grab elements from the parent card that work with this view and bind associated events
                      this.$triggerOpenBtn = options.$triggerOpenBtn; // Opens and closes session selection view
                      this.$dateDisplayField = options.$dateDisplayField; // Displays current session dates
-                     this.$enterCourseBtn = options.$enterCourseBtn; // Link to course home page
+                     this.$enterCourseBtn = options.$enterCourseBtn; // Button link to course home page
+                     this.$courseTitleLink = options.$courseTitleLink; // Title link to course home page
                      this.$triggerOpenBtn.on('click', this.toggleSessionSelectionPanel.bind(this));
 
                      this.render(options);
@@ -69,29 +78,14 @@
                     this.updateEnrollBtn();
                  },
 
-                 formatDates: function(sessionData) {
-                    /*
-                    Updates a passed in data object with a localized string representing the start and end
-                    dates for a particular course session.
-                    */
-                    var startDate, startDateString, isCurrentlyEnrolled;
-                    for (var i = 0; i < sessionData.length; i++) {
-                        isCurrentlyEnrolled = (sessionData[i].session_id)
-                        startDate = sessionData[i].session_start;
-                        startDateString = startDate ? (new Date(startDate)).toLocaleDateString() : '';
-                        sessionData[i].session_dates = sessionData[i].session_end ? startDateString + gettext(" to ")
-                            + (new Date(sessionData[i].session_end)).toLocaleDateString() : gettext("Starts ")
-                            + startDateString;
-                    }
-                    return sessionData;
-                 },
-
                  handleEnrollChange: function(e) {
+                    /* Handles enrolling in a course, unenrolling in a session and changing session. */
+
+                    // Grab the id for the desired session, an unenrollment event will return null
                     this.currentSessionSelection = this.$('.session-select').find('option:selected').data('session_id');
 
-                    if (this.$('.enroll-btn-initial').hasClass('disabled')) {
-                        return;
-                    }
+                    // Do not allow for enrollment when button is disabled
+                    if (this.$('.enroll-btn-initial').hasClass('disabled')) return;
 
                     if (!this.currentSessionSelection) {
                         alert("We want to unenroll the user!");
@@ -107,6 +101,7 @@
                         contentType: 'application/json',
                         dataType: 'json',
                         data: JSON.stringify({
+                            is_active: this.currentSessionSelection.length != 0,
                             course_details: {
                               course_id: this.currentSessionSelection,
                               course_uuid: this.entitlementModel.get('entitlementUUID'),
@@ -118,19 +113,15 @@
                  },
 
                  enrollSuccess: function(data) {
-                    // Update the model with the new session Id
-                    this.entitlementModel.set({currentSessionId: this.currentSessionSelection});
-
-                    // Update external elements on the course card to represent the now available course session
+                    // Update external elements on the course card to represent the now available course session.
                     this.$triggerOpenBtn.removeClass('hidden');
-                    this.$dateDisplayField.html(this.$('.session-select').val());
-                    // TODO: get this to be a real string pointing to the course
-                    this.$enterCourseBtn.attr('href','#');
-                    this.$enterCourseBtn.removeClass('hidden');
+                    this.$dateDisplayField.html(this.getAvailableSessionWithId(data.course_details.course_id).session_dates);
                     this.$dateDisplayField.prepend('<span class="fa fa-check"></span>');
+                    this.$enterCourseBtn.attr('href', this.formatCourseHomeUrl(data.course_details.course_id));
+                    this.$enterCourseBtn.removeClass('hidden');
 
-                    // Reload the session selection panel and close it
-                    this.render(this.entitlementModel.toJSON());
+                    // Update the model with the new session Id and close the selection panel.
+                    this.entitlementModel.set({currentSessionId: this.currentSessionSelection});
                     this.toggleSessionSelectionPanel();
                  },
 
@@ -142,47 +133,50 @@
 
                  updateEnrollBtn: function() {
                     /*
-                    This function plays three crucial roles:
+                    This function is invoked on load, on opening the view and on changing the option on the session
+                    selection dropdown. It plays three roles:
                     1) Enables and disables enroll button
                     2) Changes text to describe the action taken
                     3) Formats the confirmation popover to allow for two step authentication
                     */
-                     var enrollText,
-                        confirmationHTML;
-                     var currentSessionId = this.entitlementModel.get('currentSessionId');
-                     var newSessionId = this.$('.session-select').find('option:selected').data('session_id');
-                     var enrollBtnInitial = this.$('.enroll-btn-initial');
+                    var enrollText,
+                        confirmationHTML,
+                        currentSessionId = this.entitlementModel.get('currentSessionId'),
+                        newSessionId = this.$('.session-select').find('option:selected').data('session_id'),
+                        enrollBtnInitial = this.$('.enroll-btn-initial');
 
-                     // Disable the button if the user is already enrolled in that session.
-                     if (currentSessionId == newSessionId) {
+                    // Disable the button if the user is already enrolled in that session.
+                    if (currentSessionId == newSessionId) {
                         enrollBtnInitial.addClass('disabled');
                         enrollBtnInitial.popover('dispose');
                         return;
-                     }
-                     enrollBtnInitial.removeClass('disabled');
+                    }
+                    enrollBtnInitial.removeClass('disabled');
 
-                     // Update the button text based on whether the user is initially enrolling or changing session.
-                     if (newSessionId) {
-                         enrollText = currentSessionId ? gettext('Change Session') : gettext('Enroll in Session');
-                     } else {
-                         enrollText = gettext("Leave Current Session");
-                     }
-                     this.$('.enroll-btn-initial').text(enrollText);
+                    // Update the button text based on whether the user is initially enrolling or changing session.
+                    if (newSessionId) {
+                        enrollText = currentSessionId ? gettext('Change Session') : gettext('Select Session');
+                    } else {
+                        enrollText = gettext("Leave Current Session");
+                    }
+                    this.$('.enroll-btn-initial').text(enrollText);
 
-                     // Update the button popover to enable two step authentication.
-                     if (newSessionId) {
-                         confirmationHTML = currentSessionId ?
-                             gettext('Are you sure that you would like to switch session?') + '<br><br>' +
-                             gettext(' Please know that by choosing to switch session you will lose any progress you' +
-                             'have made in this session.') :
-                             gettext('Are you sure that you would like to enroll in this session?');
-                     } else {
-                         confirmationHTML = gettext('Are you sure that you would like to leave this session?') +
-                         '<br><br>' + gettext('Please know that by leaving you will lose any progress you had' +
-                         ' made in this session.');
-                     }
-                     enrollBtnInitial.popover('dispose');
-                     enrollBtnInitial.popover({
+                    // Update the button popover to enable two step authentication.
+                    if (newSessionId) {
+                        confirmationHTML = currentSessionId ?
+                            gettext('Are you sure that you would like to switch session?') + '<br><br>' +
+                            gettext(' Please know that by choosing to switch session you will lose any progress you' +
+                            'have made in this session.') :
+                            gettext('Are you sure that you would like to select this session?');
+                    } else {
+                        confirmationHTML = gettext('Are you sure that you would like to leave this session?') +
+                            '<br><br>' + gettext('Please know that by leaving you will lose any progress you had' +
+                            ' made in this session.');
+                    }
+
+                    // Remove existing popover and re-initialize
+                    enrollBtnInitial.popover('dispose');
+                    enrollBtnInitial.popover({
                         placement: 'bottom',
                         container: this.$el,
                         html: true,
@@ -198,17 +192,23 @@
                             '</div>' + '</div>'
                     });
 
+                    // Close popover on click-away
+                    $(document).on('click', function(e) {
+                       if (!($(e.target).closest('.enroll-btn-initial, .popover').length)){
+                           this.$('.enroll-btn-initial').popover('hide');
+                       };
+                    }.bind(this));
+
                     // Ensure that focus moves to the popover on click of the initial change enrollment button.
                     this.$('.enroll-btn-initial').on('click', function() {
-                        $(this).closest('.course-entitlement-selection-container')
-                            .find('.final-confirmation-btn:first').focus();
-                    });
+                        this.$('.final-confirmation-btn:first').focus();
+                    }.bind(this));
                  },
 
                  handleVerificationPopoverA11y: function(e) {
                     /* Ensure that the second step verification popover is treated as an a11y compliant dialog */
-                    var nextButton;
-                    var openButton = $(e.target).closest('.course-entitlement-selection-container')
+                    var nextButton,
+                        openButton = $(e.target).closest('.course-entitlement-selection-container')
                         .find('.enroll-btn-initial');
                     if (e.key == 'Tab') {
                         e.preventDefault();
@@ -222,8 +222,46 @@
                  },
 
                  hideVerificationDialog: function() {
-                   this.$('.enroll-btn-initial').focus().popover('hide');
+                    this.$('.enroll-btn-initial').focus().popover('hide');
                  },
+
+                 formatCourseHomeUrl: function(sessionId) {
+                    /* Takes the base course home URL and updates it with the new session id*/
+                    var newUrl = this.courseHomeUrl.split('/');
+                    newUrl[newUrl.length-3] = sessionId;
+                    return newUrl.join('/');
+                 },
+
+                 formatDates: function(sessionData) {
+                    var startDate,
+                        endDate,
+                        dateFormat;
+                    // Ensure the correct formatting for the date string
+                    moment.locale(window.navigator.userLanguage || window.navigator.language);
+                    dateFormat = moment.localeData().longDateFormat('L').indexOf('DD') >
+                        moment.localeData().longDateFormat('L').indexOf('MM') ? 'MMMM D, YYYY' : 'D MMMM, YYYY';
+
+                    for (var i = 0; i < sessionData.length; i++) {
+                        startDate = sessionData[i].session_start ?
+                            moment((new Date(sessionData[i].session_start))).format(dateFormat) : null;
+                        endDate = sessionData[i].session_end ?
+                            moment((new Date(sessionData[i].session_end))).format(dateFormat) : null;
+                        sessionData[i].session_dates = this.courseCardModel.formatDateString({
+                            'start_date': startDate,
+                            'end_date': endDate,
+                            'pacing_type': sessionData[i].pacing_type
+                        });
+                    }
+                    return sessionData;
+                 },
+
+                 getAvailableSessionWithId: function(sessionId) {
+                     /* Returns an available session given a sessionId */
+                    var available_sessions = this.entitlementModel.get('availableSessions').filter(function(x) {
+                        return x.session_id == sessionId
+                    });
+                    return available_sessions ? available_sessions[0] : '';
+                 }
              });
          }
     );
