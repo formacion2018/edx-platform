@@ -6,10 +6,11 @@
     define([
         'backbone',
         'underscore',
+        'gettext',
         'jquery',
         'edx-ui-toolkit/js/utils/date-utils'
     ],
-        function(Backbone, _, $, DateUtils) {
+        function(Backbone, _, gettext, $, DateUtils) {
             return Backbone.Model.extend({
                 initialize: function(data) {
                     if (data) {
@@ -148,21 +149,21 @@
                         endDate = new Date(end);
 
                     if (pacingType === 'self_paced') {
-                        dateString = '(Self-paced) ';
+                        dateString = gettext('(Self-paced) ');
                         if (start) {
-                            dateString +=  startDate > now ? ('Starts ' + start) : ('Started ' + start);
+                            dateString +=  startDate > now ? gettext('Starts ') + start : gettext('Started ') + start;
                         } else if (end && endDate > now) {
-                            dateString += 'Ends ' + end;
+                            dateString += gettext('Ends ') + end;
                         } else if (end && endDate < now) {
-                            dateString += 'Ended ' + end;
+                            dateString += gettext('Ended ') + end;
                         }
                     } else {
                         if (start && end) {
                             dateString = start + ' - ' + end;
                         } else if (start) {
-                            dateString =  startDate > now ? ('Starts ' + start) : ('Started ' + start);
+                            dateString =  startDate > now ? gettext('Starts ') + start : gettext('Started ') + start;
                         } else if (end) {
-                            dateString = 'Ends ' + end;
+                            dateString = gettext('Ends ') + end;
                         }
                     }
                     return dateString;
