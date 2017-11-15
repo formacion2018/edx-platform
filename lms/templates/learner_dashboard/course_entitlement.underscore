@@ -7,6 +7,8 @@
                     <%-availableSessions[i].session_dates%>
                     <% if (availableSessions[i].session_id == currentSessionId) { %>
                         <%- gettext('  - Currently Enrolled')%>
+                    <% } else if (availableSessions[i].enrollment_end){ %>
+                        <%- gettext(' (Enroll by ') + availableSessions[i].enrollment_end + ')'%>
                     <% } %>
                 </option>
             <% } %>
