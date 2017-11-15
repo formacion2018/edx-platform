@@ -137,10 +137,10 @@ from student.models import CourseEnrollment
                   # Grab the available, enrollable sessions for a given entitlement and scrape them for relevant attributes
                   entitlement_available_sessions = [{
                     'session_id': course['key'],
-                    'session_start': CourseOverview.get_from_id(CourseKey.from_string(course['key'])).dashboard_start_display,
-                    'session_end': CourseOverview.get_from_id(CourseKey.from_string(course['key'])).dashboard_end_display,
                     'enrollment_end': course['enrollment_end'],
                     'pacing_type': course['pacing_type'],
+                    'session_start': CourseOverview.get_from_id(CourseKey.from_string(course['key'])).dashboard_start_display,
+                    'session_end': CourseOverview.get_from_id(CourseKey.from_string(course['key'])).dashboard_end_display,
                     } for course in course_entitlement_available_sessions[str(entitlement.uuid)]]
                   if is_fulfilled_entitlement:
                     # If the user has a fulfilled entitlement, pass through the entitlements CourseEnrollment object
