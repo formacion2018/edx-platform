@@ -278,7 +278,7 @@
                             'end_date': endDate,
                             'pacing_type': sessionData[i].pacing_type
                         });
-                        sessionData[i].enrollmentEndDate =  sessionData[i].enrollment_end ?
+                        sessionData[i].enrollment_end =  sessionData[i].enrollment_end ?
                             moment((new Date(sessionData[i].enrollment_end))).format(dateFormat) : null;
                     }
                     return sessionData;
