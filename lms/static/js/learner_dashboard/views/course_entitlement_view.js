@@ -53,7 +53,10 @@
                      this.$triggerOpenBtn = options.$triggerOpenBtn; // Opens and closes session selection view
                      this.$dateDisplayField = options.$dateDisplayField; // Displays current session dates
                      this.$enterCourseBtn = options.$enterCourseBtn; // Button link to course home page
+                     this.$courseCardMessages = options.$courseCardMessages; // Additional session messages
                      this.$courseTitleLink = options.$courseTitleLink; // Title link to course home page
+                     this.$courseImageLink = options.$courseImageLink; // Image link to course home page
+                     this.$courseMessages = options.$courseMessages; // Extra messages attached to course Card
                      this.$triggerOpenBtn.on('click', this.toggleSessionSelectionPanel.bind(this));
 
                      this.render(options);
@@ -79,18 +82,18 @@
                  },
 
                  handleEnrollChange: function(e) {
-                    /* Handles enrolling in a course, unenrolling in a session and changing session. */
+                    /*
+                    Handles enrolling in a course, unenrolling in a session and changing session.
+                    The new session id is stored as a data attribute on the option in the session-select element.
+                    */
+                    var isUnenrolling;
 
                     // Grab the id for the desired session, an unenrollment event will return null
                     this.currentSessionSelection = this.$('.session-select').find('option:selected').data('session_id');
+                    isUnenrolling = !this.currentSessionSelection;
 
                     // Do not allow for enrollment when button is disabled
                     if (this.$('.enroll-btn-initial').hasClass('disabled')) return;
-
-                    if (!this.currentSessionSelection) {
-                        alert("We want to unenroll the user!");
-                        return;
-                    }
 
                     // Display the indicator icon
                     this.$dateDisplayField.html('<span class="fa fa-spinner fa-spin"></span>');
@@ -101,7 +104,7 @@
                         contentType: 'application/json',
                         dataType: 'json',
                         data: JSON.stringify({
-                            is_active: this.currentSessionSelection.length != 0,
+                            is_active: !isUnenrolling,
                             course_details: {
                               course_id: this.currentSessionSelection,
                               course_uuid: this.entitlementModel.get('entitlementUUID'),
@@ -113,16 +116,40 @@
                  },
 
                  enrollSuccess: function(data) {
-                    // Update external elements on the course card to represent the now available course session.
-                    this.$triggerOpenBtn.removeClass('hidden');
-                    this.$dateDisplayField.html(this.getAvailableSessionWithId(data.course_details.course_id).session_dates);
-                    this.$dateDisplayField.prepend('<span class="fa fa-check"></span>');
-                    this.$enterCourseBtn.attr('href', this.formatCourseHomeUrl(data.course_details.course_id));
-                    this.$enterCourseBtn.removeClass('hidden');
+                    /*
+                    Update external elements on the course card to represent the now available course session.
 
-                    // Update the model with the new session Id and close the selection panel.
+                    On enroll:
+                    1) Show the change session toggle button.
+                    2) Add the new session's dates to the date field on the main course card.
+                    3) Hide the 'View Course' button to the course card.
+
+                    On unenroll:
+                    1) Hide the change session button and the date field.
+                    2) Hide the 'View Course' button.
+                    3) Remove the messages associated with the enrolled state.
+                    4) Remove the link from the course card image and title.
+                    */
+                    var enrolled = data.is_active;
+
+                    // Update the model with the new session Id;
                     this.entitlementModel.set({currentSessionId: this.currentSessionSelection});
-                    this.toggleSessionSelectionPanel();
+                    if (enrolled) {
+                        this.$triggerOpenBtn.removeClass('hidden');
+                        this.$dateDisplayField.html(this.getAvailableSessionWithId(data.course_details.course_id).session_dates).prepend('<span class="fa fa-check"></span>');;
+                        this.$enterCourseBtn.attr('href', this.formatCourseHomeUrl(data.course_details.course_id)).removeClass('hidden');
+                        this.toggleSessionSelectionPanel();
+                    } else {
+                        // Reset the card contents to the unenrolled state
+                        this.$triggerOpenBtn.addClass('hidden');
+                        this.$enterCourseBtn.addClass('hidden');
+                        this.$dateDisplayField.html('');
+                        this.$courseCardMessages.remove();
+
+                        // Remove links to previously enrolled sessions
+                        this.$courseImageLink.replaceWith('<div class="' + this.$courseImageLink.attr('class') + '" tabindex="-1">' + this.$courseImageLink.html() + '</div>');
+                        this.$courseTitleLink.replaceWith('<span>' + this.$courseTitleLink.text() + '</span>');
+                    }
                  },
 
                  enrollError: function(data) {

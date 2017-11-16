@@ -284,7 +284,9 @@ from util.course import get_link_for_about_page, get_encoded_course_sharing_utm_
           EntitlementFactory({
               $el: $('#course-card-${course_card_index} .course-entitlement-selection-container'),
               $triggerOpenBtn: $('#course-card-${course_card_index} .change-session'),
-              $courseTitleLink: $('#course-card-${course_card_index} .course-title'),
+              $courseCardMessages: $('#course-card-${course_card_index} .messages-list > .message'),
+              $courseTitleLink: $('#course-card-${course_card_index} .course-title a'),
+              $courseImageLink: $('#course-card-${course_card_index} .wrapper-course-image > a'),
               $dateDisplayField: $('#course-card-${course_card_index} .info-date-block'),
               $enterCourseBtn: $('#course-card-${course_card_index} .enter-course'),
               availableSessions: '${ entitlement_available_sessions | n, dump_js_escaped_json }',

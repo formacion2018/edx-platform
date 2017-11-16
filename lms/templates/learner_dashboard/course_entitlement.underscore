@@ -1,5 +1,11 @@
 <div id="change-session-<%-entitlementUUID%>" class="message is-shown">
-    <div class="action-header"> <%- gettext('Select a course session to enroll in:') %></div>
+    <div class="action-header">
+        <% if (currentSessionId) { %>
+            <%- gettext('To change your session or leave your current session, please select from the following:')%>
+        <% } else { %>
+            <%- gettext('In order to view the course you must select a session:')%>
+        <% } %>
+    </div>
     <div class="action-controls">
         <select class="session-select">
             <% for (var i=0; i< availableSessions.length; i++) { %>
