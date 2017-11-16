@@ -4,6 +4,7 @@ Configuration models for Video XModule
 from config_models.models import ConfigurationModel
 from django.db.models import BooleanField
 
+from common.djangoapps.request_cache.middleware import request_cached
 from openedx.core.djangoapps.xmodule_django.models import CourseKeyField
 
 
@@ -18,10 +19,14 @@ class HLSPlaybackEnabledFlag(ConfigurationModel):
     enabled_for_all_courses = BooleanField(default=False)
 
     @classmethod
+    @request_cached
     def feature_enabled(cls, course_id):
         """
         Looks at the currently active configuration model to determine whether
         the HLS Playback feature is available.
+
+        This method call will be cached for the lifetime of the current request
+        to avoid repeatedly checking memcached for a static value.
 
         If the feature flag is not enabled, the feature is not available.
         If the flag is enabled for all the courses, feature is available.
