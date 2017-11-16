@@ -252,11 +252,13 @@
                     this.$('.enroll-btn-initial').focus().popover('hide');
                  },
 
-                 formatCourseHomeUrl: function(sessionId) {
-                    /* Takes the base course home URL and updates it with the new session id*/
-                    var newUrl = this.courseHomeUrl.split('/');
-                    newUrl[newUrl.length-3] = sessionId;
-                    return newUrl.join('/');
+                 formatCourseHomeUrl: function(sessionKey) {
+                    /*
+                    Takes the base course home URL and updates it with the new session id
+                    Leverages the fact that all course keys contain a '+'
+                    */
+                    var courseKey = this.courseHomeUrl.split('/').filter(function(x){return x.indexOf('+') > 0})[0]
+                    return this.courseHomeUrl.replace(courseKey, sessionKey)
                  },
 
                  formatDates: function(sessionData) {
