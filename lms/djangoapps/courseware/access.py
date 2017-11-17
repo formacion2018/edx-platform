@@ -748,7 +748,7 @@ def _can_access_descriptor_with_milestones(user, descriptor, course_key):
     """
     if milestones_helpers.get_course_content_milestones(course_key, unicode(descriptor.location), 'requires', user.id):
         debug("Deny: user has not completed all milestones for content")
-        return ACCESS_DENIED #TODO: Tag descriptor with gated somehow
+        return ACCESS_GRANTED #TODO: Tag descriptor with gated somehow
     else:
         return ACCESS_GRANTED
 

@@ -838,7 +838,7 @@ def get_module_for_descriptor_internal(user, descriptor, student_data, course_id
     user_needs_access_check = getattr(user, 'known', True) and not isinstance(user, SystemUser)
     if user_needs_access_check:
         if not has_access(user, 'load', descriptor, course_id):
-            return descriptor #TODO: tag descriptor as needed to be gated
+            return None #TODO: tag descriptor as needed to be gated
     return descriptor
 
 
