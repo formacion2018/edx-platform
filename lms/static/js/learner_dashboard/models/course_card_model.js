@@ -151,7 +151,7 @@
                     if (pacingType === 'self_paced') {
                         dateString = gettext('(Self-paced) ');
                         if (start) {
-                            dateString +=  startDate > now ? gettext('Starts ') + start : gettext('Started ') + start;
+                            dateString += startDate > now ? gettext('Starts ') + start : gettext('Started ') + start;
                         } else if (end && endDate > now) {
                             dateString += gettext('Ends ') + end;
                         } else if (end && endDate < now) {
@@ -161,7 +161,7 @@
                         if (start && end) {
                             dateString = start + ' - ' + end;
                         } else if (start) {
-                            dateString =  startDate > now ? gettext('Starts ') + start : gettext('Started ') + start;
+                            dateString = startDate > now ? gettext('Starts ') + start : gettext('Started ') + start;
                         } else if (end) {
                             dateString = gettext('Ends ') + end;
                         }

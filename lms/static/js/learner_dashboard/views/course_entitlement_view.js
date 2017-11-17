@@ -62,18 +62,18 @@
                      this.render(options);
                  },
 
-                 render: function(options) {
+                 render: function() {
                      HtmlUtils.setHtml(this.$el, this.tpl(this.entitlementModel.toJSON()));
                      this.delegateEvents();
                      this.updateEnrollBtn();
                  },
 
-                 toggleSessionSelectionPanel: function(e) {
+                 toggleSessionSelectionPanel: function() {
                     /*
                     Opens and closes the session selection panel.
                     */
                     this.$el.toggleClass('hidden');
-                    if (!this.$el.hasClass('hidden')){
+                    if (!this.$el.hasClass('hidden')) {
                         // Set focus to the session selection for a11y purposes
                         this.$('.session-select').focus();
                         this.$('.enroll-btn-initial').popover('hide');
@@ -81,7 +81,7 @@
                     this.updateEnrollBtn();
                  },
 
-                 handleEnrollChange: function(e) {
+                 handleEnrollChange: function() {
                     /*
                     Handles enrolling in a course, unenrolling in a session and changing session.
                     The new session id is stored as a data attribute on the option in the session-select element.
@@ -111,7 +111,7 @@
                             }
                           }),
                         success: _.bind(this.enrollSuccess, this),
-                        error: _.bind(this.enrollError, this),
+                        error: _.bind(this.enrollError, this)
                     });
                  },
 
@@ -136,7 +136,7 @@
                     this.entitlementModel.set({currentSessionId: this.currentSessionSelection});
                     if (enrolled) {
                         this.$triggerOpenBtn.removeClass('hidden');
-                        this.$dateDisplayField.html(this.getAvailableSessionWithId(data.course_details.course_id).session_dates).prepend('<span class="fa fa-check"></span>');;
+                        this.$dateDisplayField.html(this.getAvailableSessionWithId(data.course_details.course_id).session_dates).prepend('<span class="fa fa-check"></span>');
                         this.$enterCourseBtn.attr('href', this.formatCourseHomeUrl(data.course_details.course_id)).removeClass('hidden');
                         this.toggleSessionSelectionPanel();
                     } else {
@@ -173,7 +173,7 @@
                         enrollBtnInitial = this.$('.enroll-btn-initial');
 
                     // Disable the button if the user is already enrolled in that session.
-                    if (currentSessionId == newSessionId) {
+                    if (currentSessionId === newSessionId) {
                         enrollBtnInitial.addClass('disabled');
                         enrollBtnInitial.popover('dispose');
                         return;
@@ -212,18 +212,18 @@
                             'aria-labelledby="enrollment-verification-title">' +
                             '<p id="enrollment-verification-title">' + confirmationHTML + '</p>' +
                             '<div class="action-items">' +
-                            '<button type="button" class="popover-dismiss final-confirmation-btn" tabindex="0">' +
+                            '<button type="button" class="popover-dismiss final-confirmation-btn">' +
                             gettext('No') + '</button>' +
-                            '<button type="button" class="enroll-btn final-confirmation-btn" tabindex="0">' +
+                            '<button type="button" class="enroll-btn final-confirmation-btn">' +
                             gettext('Yes') + '</button>' +
                             '</div>' + '</div>'
                     });
 
                     // Close popover on click-away
                     $(document).on('click', function(e) {
-                       if (!($(e.target).closest('.enroll-btn-initial, .popover').length)){
+                       if (!($(e.target).closest('.enroll-btn-initial, .popover').length)) {
                            this.$('.enroll-btn-initial').popover('hide');
-                       };
+                       }
                     }.bind(this));
 
                     // Ensure that focus moves to the popover on click of the initial change enrollment button.
@@ -237,12 +237,12 @@
                     var nextButton,
                         openButton = $(e.target).closest('.course-entitlement-selection-container')
                         .find('.enroll-btn-initial');
-                    if (e.key == 'Tab') {
+                    if (e.key === 'Tab') {
                         e.preventDefault();
                         nextButton = $(e.target).is(':first-child') ? $(e.target).next('.final-confirmation-btn') :
                             $(e.target).prev('.final-confirmation-btn');
                         nextButton.focus();
-                    } else if (e.key == 'Escape') {
+                    } else if (e.key === 'Escape') {
                         openButton.popover('hide');
                         openButton.focus();
                     }
@@ -254,44 +254,45 @@
 
                  formatCourseHomeUrl: function(sessionKey) {
                     /*
-                    Takes the base course home URL and updates it with the new session id
-                    Leverages the fact that all course keys contain a '+'
+                    Takes the base course home URL and updates it with the new session id, leveraging the
+                    the fact that all course keys contain a '+' symbol.
                     */
-                    var courseKey = this.courseHomeUrl.split('/').filter(function(x){return x.indexOf('+') > 0})[0]
-                    return this.courseHomeUrl.replace(courseKey, sessionKey)
+                    var oldSessionKey = this.courseHomeUrl.split('/').filter(function(x) {return x.indexOf('+') > 0})[0];
+                    return this.courseHomeUrl.replace(oldSessionKey, sessionKey)
                  },
 
                  formatDates: function(sessionData) {
-                    var startDate,
-                        endDate,
-                        dateFormat;
-                    // Ensure the correct formatting for the date string
-                    moment.locale(window.navigator.userLanguage || window.navigator.language);
-                    dateFormat = moment.localeData().longDateFormat('L').indexOf('DD') >
-                        moment.localeData().longDateFormat('L').indexOf('MM') ? 'MMMM D, YYYY' : 'D MMMM, YYYY';
+                     var formattedSessionData = sessionData,
+                         startDate,
+                         endDate,
+                         dateFormat;
+                     // Ensure the correct formatting for the date string
+                     moment.locale(window.navigator.userLanguage || window.navigator.language);
+                     dateFormat = moment.localeData().longDateFormat('L').indexOf('DD') >
+                         moment.localeData().longDateFormat('L').indexOf('MM') ? 'MMMM D, YYYY' : 'D MMMM, YYYY';
 
-                    for (var i = 0; i < sessionData.length; i++) {
-                        startDate = sessionData[i].session_start ?
-                            moment((new Date(sessionData[i].session_start))).format(dateFormat) : null;
-                        endDate = sessionData[i].session_end ?
-                            moment((new Date(sessionData[i].session_end))).format(dateFormat) : null;
-                        sessionData[i].session_dates = this.courseCardModel.formatDateString({
-                            'start_date': startDate,
-                            'end_date': endDate,
-                            'pacing_type': sessionData[i].pacing_type
-                        });
-                        sessionData[i].enrollment_end =  sessionData[i].enrollment_end ?
-                            moment((new Date(sessionData[i].enrollment_end))).format(dateFormat) : null;
-                    }
-                    return sessionData;
+                     return _.map(formattedSessionData, function(session) {
+                         startDate = session.session_start ?
+                             moment((new Date(session.session_start))).format(dateFormat) : null;
+                         endDate = session.session_end ?
+                             moment((new Date(session.session_end))).format(dateFormat) : null;
+                         session.session_dates = this.courseCardModel.formatDateString({
+                             start_date: startDate,
+                             end_date: endDate,
+                             pacing_type: session.pacing_type
+                         });
+                         session.enrollment_end =  session.enrollment_end ?
+                             moment((new Date(session.enrollment_end))).format(dateFormat) : null;
+                         return session;
+                     }, this);
                  },
 
                  getAvailableSessionWithId: function(sessionId) {
                      /* Returns an available session given a sessionId */
-                    var available_sessions = this.entitlementModel.get('availableSessions').filter(function(x) {
-                        return x.session_id == sessionId
-                    });
-                    return available_sessions ? available_sessions[0] : '';
+                     var availableSessions = this.entitlementModel.get('availableSessions').filter(function(x) {
+                        return x.session_id === sessionId;
+                     });
+                     return availableSessions ? availableSessions[0] : '';
                  }
              });
          }
