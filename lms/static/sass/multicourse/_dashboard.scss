@@ -1145,6 +1145,10 @@
     }
 
     .popover {
+      .popover-title {
+        margin-bottom: $baseline/2;
+      }
+
       .action-items {
         display: flex;
         justify-content: space-between;
