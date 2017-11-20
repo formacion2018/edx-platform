@@ -283,8 +283,8 @@
                     var attributes, value;
                     if (this.persistChanges === true) {
                         attributes = {};
-                        value = this.fieldValue() != null ? [{platform: this.options.platform,
-                            social_link: this.fieldValue()}] : [];
+                        value = this.fieldValue() != null ? [{field_name: this.options.field_name,
+                            field_value: this.fieldValue()}] : [];
                         attributes[this.options.valueAttribute] = value;
                         this.saveAttributes(attributes);
                     }
