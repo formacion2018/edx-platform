@@ -85,6 +85,7 @@ class CommonCertificatesTestCase(ModuleStoreTestCase):
             org='testorg',
             number='run1',
             display_name='refundable course',
+            certificate_available_date=datetime.datetime.today() - datetime.timedelta(days=1),
         )
         self.course_id = self.course.location.course_key
         self.user = UserFactory.create(
@@ -114,7 +115,6 @@ class CommonCertificatesTestCase(ModuleStoreTestCase):
             user=self.user,
             course_id=self.course_id,
             mode=CourseMode.HONOR,
-            certificate_available_date=datetime.datetime.today() - datetime.timedelta(days=1),
         )
         CertificateHtmlViewConfigurationFactory.create()
         LinkedInAddToProfileConfigurationFactory.create()
