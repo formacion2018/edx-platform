@@ -5,6 +5,7 @@ import logging
 from collections import defaultdict
 from copy import deepcopy
 from itertools import chain
+import operator
 from urlparse import urljoin
 
 from dateutil.parser import parse
@@ -464,10 +465,11 @@ class ProgramDataExtender(object):
 
     def _filter_out_courses_with_entitlements(self, courses):
         course_uuids = set(course['uuid'] for course in courses)
-        entitlements = self.user.courseentitlement_set.filter(
-            course_uuid__in=set(course['uuid'] for course in courses),
-            mode__in=self.data['applicable_seat_types']
+        # Filter the entitlements' modes with a case-insensitive match against applicable seat_types
+        query  = Q(course_uuid__in=course_uuids) & reduce(
+            operator.or_, (Q(mode__iexact=seat_type) for seat_type in self.data['applicable_seat_types'])
         )
+        entitlements = self.user.courseentitlement_set.filter(query)
         courses_with_entitlements = set(entitlement.course_uuid for entitlement in entitlements)
         return filter(
             lambda course: course['uuid'] not in courses_with_entitlements,
