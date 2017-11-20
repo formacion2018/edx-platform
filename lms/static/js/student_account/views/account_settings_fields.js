@@ -283,7 +283,7 @@
                     var attributes, value;
                     if (this.persistChanges === true) {
                         attributes = {};
-                        value = this.fieldValue() != null ? [{field_name: this.options.field_name,
+                        value = this.fieldValue() != null ? [{field_name: this.options.fieldName,
                             field_value: this.fieldValue()}] : [];
                         attributes[this.options.valueAttribute] = value;
                         this.saveAttributes(attributes);
@@ -304,7 +304,8 @@
                 saveValue: function() {
                     if (this.persistChanges === true) {
                         var attributes = {},
-                            value = this.fieldValue() ? [{code: this.fieldValue()}] : [];
+                            value = this.fieldValue() ? [{field_name: this.options.fieldName,
+                                field_value: this.fieldValue()}] : [];
                         attributes[this.options.valueAttribute] = value;
                         this.saveAttributes(attributes);
                     }
