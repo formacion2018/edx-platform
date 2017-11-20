@@ -22,7 +22,8 @@ class TestContentHighlights(ModuleStoreTestCase):
 
     def _setup_course(self):
         self.course = CourseFactory.create(
-            highlights_enabled_for_messaging=True)
+            highlights_enabled_for_messaging=True
+        )
         self.course_key = self.course.id
 
     def _setup_user(self):
