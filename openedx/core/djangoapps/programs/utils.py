@@ -462,7 +462,6 @@ class ProgramDataExtender(object):
     def _attach_course_run_may_certify(self, run_mode):
         run_mode['may_certify'] = self.course_overview.may_certify()
 
-
     def _filter_out_courses_with_entitlements(self, courses):
         course_uuids = set(course['uuid'] for course in courses)
         # Filter the entitlements' modes with a case-insensitive match against applicable seat_types
@@ -476,7 +475,6 @@ class ProgramDataExtender(object):
             courses
         )
 
-
     def _filter_out_courses_with_enrollments(self, courses):
         enrollments = self.user.courseenrollment_set.filter(
             is_active=True,
@@ -488,7 +486,6 @@ class ProgramDataExtender(object):
             lambda course: len(filter(lambda run: unicode(run['key']) in course_runs_with_enrollments, course['course_runs'])) == 0,
             courses
         )
-
 
     def _collect_one_click_purchase_eligibility_data(self):
         """
@@ -526,12 +523,8 @@ class ProgramDataExtender(object):
                                 skus.append(seat['sku'])
                                 break
                     else:
-                        # What is this and why is it necessary?
-                        #
-                        #
                         # If a course in the program has more than 1 published course run
                         # learner won't be eligible for a one click purchase.
-                        is_learner_eligible_for_one_click_purchase = False
                         skus = []
                         break
 
