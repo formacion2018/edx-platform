@@ -213,8 +213,8 @@
                         model: userAccountModel,
                         title: extendedProfileFields[extendedProfileField],
                         fieldName: extendedProfileFields[extendedProfileField],
-                        valueAttribute: 'extended_profile_fields',
-                        helpMessage: gettext('extended_profile_fields: ' + extendedProfileFields[extendedProfileField]),
+                        valueAttribute: 'extended_profile',
+                        helpMessage: gettext('extended_profile: ' + extendedProfileFields[extendedProfileField]),
                         persistChanges: true
                     })
                 });

@@ -139,7 +139,7 @@ class UserReadOnlySerializer(serializers.Serializer):
                     "social_links": SocialLinkSerializer(
                         user_profile.social_links.all(), many=True
                     ).data,
-                    "extended_profile_fields": get_extended_profile_fields(user_profile, user),
+                    "extended_profile": get_extended_profile(user_profile),
                 }
             )
 
@@ -328,18 +328,24 @@ class AccountLegacyProfileSerializer(serializers.HyperlinkedModelSerializer, Rea
 
         return instance
 
-def get_extended_profile_fields(user_profile, user):
-    import json
-    extra_fields_dict = json.loads(user_profile.meta)
-    # dummy_meta = {"first_name": "Afzal", "last_name": "Naushahi", "title": "done", "country": "PK", "company": "home", "state": "Punjab"}
 
-    extended_profile_fields = []
-    for field in extra_fields_dict.keys():
-        extended_profile_fields.append({
+def get_extended_profile(user_profile):
+    import json
+    from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
+
+    extended_profile_fields_data = json.loads(user_profile.meta)
+
+    # pick the keys from the site configuration
+    extended_profile_field_names = configuration_helpers.get_value('extended_profile_fields', [])
+
+    extended_profile = []
+    for field in extended_profile_field_names:
+        extended_profile.append({
             "field_name": field,
-            "field_value": extra_fields_dict[field]
+            "field_value": extended_profile_fields_data[field]
         })
-    return extended_profile_fields
+    return extended_profile
+
 
 def get_profile_visibility(user_profile, user, configuration=None):
     """Returns the visibility level for the specified user profile."""
@@ -373,3 +379,4 @@ def _visible_fields(user_profile, user, configuration=None):
         return configuration.get('shareable_fields')
     else:
         return configuration.get('public_fields')
+
