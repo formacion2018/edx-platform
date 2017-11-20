@@ -85,7 +85,6 @@ class CommonCertificatesTestCase(ModuleStoreTestCase):
             org='testorg',
             number='run1',
             display_name='refundable course',
-            certificate_available_date=datetime.datetime.today() - datetime.timedelta(days=1),
         )
         self.course_id = self.course.location.course_key
         self.user = UserFactory.create(
@@ -120,7 +119,7 @@ class CommonCertificatesTestCase(ModuleStoreTestCase):
         LinkedInAddToProfileConfigurationFactory.create()
         CourseCompleteImageConfigurationFactory.create()
 
-    def _add_course_certificates(self, count=1, signatory_count=0, is_active=True):
+    def _add_course_certificates(self, count=1, signatory_count=0, is_active=True, available_date=None):
         """
         Create certificate for the course.
         """
@@ -150,6 +149,10 @@ class CommonCertificatesTestCase(ModuleStoreTestCase):
 
         self.course.certificates = {'certificates': certificates}
         self.course.cert_html_view_enabled = True
+        if not available_date:
+            self.course.certificate_available_date = datetime.datetime.today() - datetime.timedelta(days=1)
+        else:
+            self.course.certificate_available_date = available_date
         self.course.save()
         self.store.update_item(self.course, self.user.id)
 
@@ -657,6 +660,23 @@ class CertificatesViewsTests(CommonCertificatesTestCase):
         self.assertIn("We cannot find a certificate with this URL or ID number.", response.content)
 
     @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
+    def test_html_view_for_non_viewable_certificate(self):
+        """
+        Tests that Certificate HTML Web View returns "Cannot Find Certificate" if certificate has been invalidated.
+        """
+        available_date = datetime.datetime.today() + datetime.timedelta(days=1)
+        self._add_course_certificates(count=1, signatory_count=2, available_date=available_date)
+        test_url = get_certificate_url(
+            user_id=self.user.id,
+            course_id=unicode(self.course.id)
+        )
+
+        response = self.client.get(test_url)
+        self.assertIn("Invalid Certificate", response.content)
+        self.assertIn("Cannot Find Certificate", response.content)
+        self.assertIn("We cannot find a certificate with this URL or ID number.", response.content)
+
+    @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
     def test_render_html_view_with_valid_signatories(self):
         self._add_course_certificates(count=1, signatory_count=2)
         test_url = get_certificate_url(
@@ -686,6 +706,7 @@ class CertificatesViewsTests(CommonCertificatesTestCase):
         ]
         self.course.certificates = {'certificates': test_certificates}
         self.course.cert_html_view_enabled = True
+        self.course.certificate_available_date = datetime.datetime.today() - datetime.timedelta(days=1)
         self.course.save()
         self.store.update_item(self.course, self.user.id)
         test_url = get_certificate_url(
@@ -732,6 +753,7 @@ class CertificatesViewsTests(CommonCertificatesTestCase):
         ]
         self.course.certificates = {'certificates': test_certificates}
         self.course.cert_html_view_enabled = True
+        self.course.certificate_available_date = datetime.datetime.today() - datetime.timedelta(days=1)
         self.course.save()
         self.store.update_item(self.course, self.user.id)
 
