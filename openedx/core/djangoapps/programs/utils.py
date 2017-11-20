@@ -13,6 +13,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.utils.functional import cached_property
 from edx_rest_api_client.exceptions import SlumberBaseException
 from opaque_keys.edx.keys import CourseKey
