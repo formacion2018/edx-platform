@@ -10,7 +10,6 @@ from path import Path
 
 from microsite_configuration import microsite
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
-from openedx.core.djangoapps.site_configuration.models import SiteConfiguration
 from openedx.core.djangoapps.theming.helpers_dirs import (
     get_theme_base_dirs_from_settings,
     get_themes_unchecked,
@@ -353,6 +352,8 @@ def get_config_value_from_site_or_settings(name, site=None, site_config_name=Non
     Returns:
         The value stored in the configuration.
     """
+    from openedx.core.djangoapps.site_configuration.models import SiteConfiguration
+
     if site_config_name is None:
         site_config_name = name
 
