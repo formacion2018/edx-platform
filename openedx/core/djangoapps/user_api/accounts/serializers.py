@@ -379,4 +379,3 @@ def _visible_fields(user_profile, user, configuration=None):
         return configuration.get('shareable_fields')
     else:
         return configuration.get('public_fields')
-
