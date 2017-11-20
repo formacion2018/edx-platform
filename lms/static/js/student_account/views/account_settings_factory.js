@@ -202,26 +202,32 @@
             var additionalFields = aboutSectionsData[1];
             for (var field in extendedProfileFields) {  // eslint-disable-line guard-for-in, no-restricted-syntax, vars-on-top, max-len
                 //debugger;
-                additionalFields.fields.push({
-                    view: new AccountSettingsFieldViews.ExtendedFieldTextFieldView({
-                        model: userAccountModel,
-                        title: extendedProfileFields[field],
-                        fieldName: extendedProfileFields[field],
-                        valueAttribute: 'extended_profile',
-                        helpMessage: gettext('extended_profile: ' + extendedProfileFields[field]),
-                        persistChanges: true
-                    })
-                });
-
-                //additionalFields.fields.push({
-                //    view: new AccountSettingsFieldViews.DropdownFieldView({
-                //        model: userAccountModel,
-                //        title: gettext('Year of Birth'),
-                //        valueAttribute: 'year_of_birth',
-                //        options: fieldsData.year_of_birth.options,
-                //        persistChanges: true
-                //    })
-                //});
+                var fieldItem = extendedProfileFields[field];
+                if (fieldItem["field_type"] == "TextField") {
+                    additionalFields.fields.push({
+                        view: new AccountSettingsFieldViews.ExtendedFieldTextFieldView({
+                            model: userAccountModel,
+                            title: fieldItem["field_display_name"],
+                            fieldName: fieldItem["field_name"],
+                            valueAttribute: 'extended_profile',
+                            persistChanges: true
+                        })
+                    });
+                }
+                else {
+                    if (fieldItem["field_type"] == "ListField") {
+                        additionalFields.fields.push({
+                            view: new AccountSettingsFieldViews.ExtendedFieldListFieldView({
+                                model: userAccountModel,
+                                title: fieldItem["field_display_name"],
+                                fieldName: fieldItem["field_name"],
+                                options: fieldItem["field_options"],
+                                valueAttribute: 'extended_profile',
+                                persistChanges: true
+                            })
+                        });
+                    }
+                }
             }
 
 

@@ -2,9 +2,9 @@
 
 import json
 import logging
-import urlparse
 from datetime import datetime
 
+import urlparse
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -16,7 +16,6 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 from django_countries import countries
-
 import third_party_auth
 from edxmako.shortcuts import render_to_response
 from lms.djangoapps.commerce.models import CommerceConfiguration
@@ -404,8 +403,49 @@ def _get_form_descriptions(request):
 
 
 def _get_extended_profile_fields():
-    # site_extra_fields = configuration_helpers.get_value('REGISTRATION_EXTRA_FIELDS', settings.REGISTRATION_EXTRA_FIELDS)
-    return configuration_helpers.get_value('extended_profile_fields', []) # have to pass the field type (list/text), and also pass the options. from EXTRA_FIELD_OPTIONS in the site configuration.
+
+    field_display_names_map = {
+        "first_name": _(u"First Name"),
+        "last_name": _(u"Last Name"),
+        "city": _(u"City"),
+        "state": _(u"State/Province/Region"),
+        "country": _(u"Country or Region of Residence"),
+        "company": _(u"Company"),
+        "title": _(u"Title"),
+        "mailing_address": _(u"Mailing address"),
+        "goals": _(u"Tell us why you're interested in {platform_name}").format(
+            platform_name=configuration_helpers.get_value("PLATFORM_NAME", settings.PLATFORM_NAME)
+        ),
+        "profession": _("Profession"),
+        "specialty": _("Specialty")
+    }
+
+    extended_profile_fields = []
+
+    extended_profile_field_names = configuration_helpers.get_value('extended_profile_fields', [])
+    extended_profile_field_options = configuration_helpers.get_value('EXTRA_FIELD_OPTIONS', [])
+    html_extended_profile_field_options = {}
+    for field in extended_profile_field_options.keys():
+        field_options = extended_profile_field_options[field]
+        html_extended_profile_field_options[field] = [(option.lower(), option) for option in field_options]
+
+    html_extended_profile_field_options["country"] = list(countries)
+
+    for field in extended_profile_field_names:
+        field_dict = {
+            "field_name": field,
+            "field_display_name": field_display_names_map.get(field, field),
+        }
+
+        field_options = html_extended_profile_field_options.get(field)
+        if field_options:
+            field_dict["field_type"] = "ListField"
+            field_dict["field_options"] = field_options
+        else:
+            field_dict["field_type"] = "TextField"
+        extended_profile_fields.append(field_dict)
+
+    return extended_profile_fields
 
 
 def _external_auth_intercept(request, mode):
@@ -537,8 +577,6 @@ def account_settings_context(request):
         # it will be broken if exception raised
         user_orders = []
 
-    extended_profile_fields = _get_extended_profile_fields()
-
     context = {
         'auth': {},
         'duplicate_provider': None,
@@ -572,7 +610,7 @@ def account_settings_context(request):
         'show_program_listing': ProgramsApiConfig.is_enabled(),
         'show_dashboard_tabs': True,
         'order_history': user_orders,
-        'extended_profile_fields': extended_profile_fields,
+        'extended_profile_fields': _get_extended_profile_fields(),
     }
 
     if third_party_auth.is_enabled():

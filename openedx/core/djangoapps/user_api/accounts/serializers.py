@@ -339,10 +339,10 @@ def get_extended_profile(user_profile):
     extended_profile_field_names = configuration_helpers.get_value('extended_profile_fields', [])
 
     extended_profile = []
-    for field in extended_profile_field_names:
+    for field_name in extended_profile_field_names:
         extended_profile.append({
-            "field_name": field,
-            "field_value": extended_profile_fields_data[field]
+            "field_name": field_name,
+            "field_value": extended_profile_fields_data.get(field_name, "")
         })
     return extended_profile
 

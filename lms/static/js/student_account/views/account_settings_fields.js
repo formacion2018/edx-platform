@@ -291,33 +291,20 @@
                 }
             }),
             ExtendedFieldListFieldView: FieldViews.DropdownFieldView.extend({
-                render: function() {
-                    HtmlUtils.setHtml(this.$el, HtmlUtils.template(field_text_account_template)({
-                        id: this.options.valueAttribute + '_' + this.options.platform,
-                        title: this.options.title,
-                        value: this.modelValue(),
-                        message: this.options.helpMessage,
-                        placeholder: this.options.placeholder || ''
-                    }));
-                    this.delegateEvents();
-                    return this;
-                },
-
+                fieldTemplate: field_dropdown_account_template,
                 modelValue: function() {
-                    var socialLinks = this.model.get(this.options.valueAttribute);
-                    for (var i = 0; i < socialLinks.length; i++) { // eslint-disable-line vars-on-top
-                        if (socialLinks[i].platform === this.options.platform) {
-                            return socialLinks[i].social_link;
+                    var extendedProfileFields = this.model.get(this.options.valueAttribute);
+                    for (var i = 0; i < extendedProfileFields.length; i++) { // eslint-disable-line vars-on-top
+                        if (extendedProfileFields[i].field_name === this.options.fieldName) {
+                            return extendedProfileFields[i].field_value;
                         }
                     }
                     return null;
                 },
                 saveValue: function() {
-                    var attributes, value;
                     if (this.persistChanges === true) {
-                        attributes = {};
-                        value = this.fieldValue() != null ? [{platform: this.options.platform,
-                            social_link: this.fieldValue()}] : [];
+                        var attributes = {},
+                            value = this.fieldValue() ? [{code: this.fieldValue()}] : [];
                         attributes[this.options.valueAttribute] = value;
                         this.saveAttributes(attributes);
                     }
