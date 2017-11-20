@@ -402,6 +402,11 @@ def _get_form_descriptions(request):
     }
 
 
+def _get_extended_profile_fields():
+    # site_extra_fields = configuration_helpers.get_value('REGISTRATION_EXTRA_FIELDS', settings.REGISTRATION_EXTRA_FIELDS)
+    return configuration_helpers.get_value('extended_profile_fields', []) # have to pass the field type (list/text), and also pass the options. from EXTRA_FIELD_OPTIONS in the site configuration.
+
+
 def _external_auth_intercept(request, mode):
     """Allow external auth to intercept a login/registration request.
 
@@ -531,9 +536,7 @@ def account_settings_context(request):
         # it will be broken if exception raised
         user_orders = []
 
-    site_extra_fields = configuration_helpers.get_value('REGISTRATION_EXTRA_FIELDS', settings.REGISTRATION_EXTRA_FIELDS)
-
-    extended_profile_fields = configuration_helpers.get_value('extended_profile_fields', []) # have to pass the field type (list/text), and also pass the options. from EXTRA_FIELD_OPTIONS in the site configuration.
+    extended_profile_fields = _get_extended_profile_fields()
 
     context = {
         'auth': {},
@@ -570,12 +573,6 @@ def account_settings_context(request):
         'order_history': user_orders,
         'extended_profile_fields': extended_profile_fields,
     }
-
-    for field in RegistrationFormFactory.EXTRA_FIELDS:
-        if field in context['fields'].keys():
-            context['fields'][field]['visibility'] = site_extra_fields.get(field, "hidden")
-        else:
-            context['fields'][field] = {'visibility': site_extra_fields.get(field, "hidden")}
 
     if third_party_auth.is_enabled():
         # If the account on the third party provider is already connected with another edX account,

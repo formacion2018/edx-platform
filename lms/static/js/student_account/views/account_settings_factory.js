@@ -64,157 +64,151 @@
                 };
             }
 
-            var basicFields = {
-                title: gettext('Basic Account Information'),
-                subtitle: gettext('These settings include basic information about your account.'),
-                fields: [
-                    {
-                        view: new AccountSettingsFieldViews.ReadonlyFieldView({
-                            model: userAccountModel,
-                            title: gettext('Username'),
-                            valueAttribute: 'username',
-                            helpMessage: StringUtils.interpolate(
-                                gettext('The name that identifies you throughout {platform_name}. You cannot change your username.'),  // eslint-disable-line max-len
-                                {platform_name: platformName}
-                            )
-                        })
-                    },
-                    {
-                        view: new AccountSettingsFieldViews.TextFieldView({
-                            model: userAccountModel,
-                            title: gettext('Full Name'),
-                            valueAttribute: 'name',
-                            helpMessage: HtmlUtils.interpolateHtml(
-                                gettext('The name that is used for ID verification and that appears on your certificates. Other learners see your full name if you have selected {bold_start}Full Profile{bold_end} for profile visibility. Make sure to enter your name exactly as it appears on your photo ID, including any non-Roman characters.'),  // eslint-disable-line max-len
-                                {
-                                    bold_start: HtmlUtils.HTML('<b>'),
-                                    bold_end: HtmlUtils.HTML('</b>')
-                                }
-                            ),
-                            persistChanges: true
-                        })
-                    },
-                    emailFieldView,
-                    {
-                        view: new AccountSettingsFieldViews.PasswordFieldView({
-                            model: userAccountModel,
-                            title: gettext('Password'),
-                            screenReaderTitle: gettext('Reset Your Password'),
-                            valueAttribute: 'password',
-                            emailAttribute: 'email',
-                            passwordResetSupportUrl: passwordResetSupportUrl,
-                            linkTitle: gettext('Reset Your Password'),
-                            linkHref: fieldsData.password.url,
-                            helpMessage: StringUtils.interpolate(
-                                gettext('When you select "Reset Your Password", a message will be sent to the email address for your {platform_name} account. Click the link in the message to reset your password.'),  // eslint-disable-line max-len
-                                {platform_name: platformName}
-                            )
-                        })
-                    },
-                    {
-                        view: new AccountSettingsFieldViews.LanguagePreferenceFieldView({
-                            model: userPreferencesModel,
-                            title: gettext('Language'),
-                            valueAttribute: 'pref-lang',
-                            required: true,
-                            refreshPageOnSave: true,
-                            helpMessage: StringUtils.interpolate(
-                                gettext('The language used throughout this site. This site is currently available in a limited number of languages.'),  // eslint-disable-line max-len
-                                {platform_name: platformName}
-                            ),
-                            options: fieldsData.language.options,
-                            persistChanges: true
-                        })
-                    }
-                ]
-            };
+            aboutSectionsData = [
+                {
+                    title: gettext('Basic Account Information'),
+                    subtitle: gettext('These settings include basic information about your account.'),
+                    fields: [
+                        {
+                            view: new AccountSettingsFieldViews.ReadonlyFieldView({
+                                model: userAccountModel,
+                                title: gettext('Username'),
+                                valueAttribute: 'username',
+                                helpMessage: StringUtils.interpolate(
+                                    gettext('The name that identifies you throughout {platform_name}. You cannot change your username.'),  // eslint-disable-line max-len
+                                    {platform_name: platformName}
+                                )
+                            })
+                        },
+                        {
+                            view: new AccountSettingsFieldViews.TextFieldView({
+                                model: userAccountModel,
+                                title: gettext('Full Name'),
+                                valueAttribute: 'name',
+                                helpMessage: HtmlUtils.interpolateHtml(
+                                    gettext('The name that is used for ID verification and that appears on your certificates. Other learners see your full name if you have selected {bold_start}Full Profile{bold_end} for profile visibility. Make sure to enter your name exactly as it appears on your photo ID, including any non-Roman characters.'),  // eslint-disable-line max-len
+                                    {
+                                        bold_start: HtmlUtils.HTML('<b>'),
+                                        bold_end: HtmlUtils.HTML('</b>')
+                                    }
+                                ),
+                                persistChanges: true
+                            })
+                        },
+                        emailFieldView,
+                        {
+                            view: new AccountSettingsFieldViews.PasswordFieldView({
+                                model: userAccountModel,
+                                title: gettext('Password'),
+                                screenReaderTitle: gettext('Reset Your Password'),
+                                valueAttribute: 'password',
+                                emailAttribute: 'email',
+                                passwordResetSupportUrl: passwordResetSupportUrl,
+                                linkTitle: gettext('Reset Your Password'),
+                                linkHref: fieldsData.password.url,
+                                helpMessage: StringUtils.interpolate(
+                                    gettext('When you select "Reset Your Password", a message will be sent to the email address for your {platform_name} account. Click the link in the message to reset your password.'),  // eslint-disable-line max-len
+                                    {platform_name: platformName}
+                                )
+                            })
+                        },
+                        {
+                            view: new AccountSettingsFieldViews.LanguagePreferenceFieldView({
+                                model: userPreferencesModel,
+                                title: gettext('Language'),
+                                valueAttribute: 'pref-lang',
+                                required: true,
+                                refreshPageOnSave: true,
+                                helpMessage: StringUtils.interpolate(
+                                    gettext('The language used throughout this site. This site is currently available in a limited number of languages.'),  // eslint-disable-line max-len
+                                    {platform_name: platformName}
+                                ),
+                                options: fieldsData.language.options,
+                                persistChanges: true
+                            })
+                        },
+                        {
+                            view: new AccountSettingsFieldViews.DropdownFieldView({
+                                model: userAccountModel,
+                                required: true,
+                                title: gettext('Country or Region of Residence'),
+                                valueAttribute: 'country',
+                                options: fieldsData.country.options,
+                                persistChanges: true,
+                                helpMessage: gettext('The country or region where you live.')
+                            })
+                        },
+                        {
+                            view: new AccountSettingsFieldViews.TimeZoneFieldView({
+                                model: userPreferencesModel,
+                                required: true,
+                                title: gettext('Time Zone'),
+                                valueAttribute: 'time_zone',
+                                helpMessage: gettext('Select the time zone for displaying course dates. If you do not specify a time zone, course dates, including assignment deadlines, will be displayed in your browser\'s local time zone.'), // eslint-disable-line max-len
+                                groupOptions: [{
+                                    groupTitle: gettext('All Time Zones'),
+                                    selectOptions: fieldsData.time_zone.options,
+                                    nullValueOptionLabel: gettext('Default (Local Time Zone)')
+                                }],
+                                persistChanges: true
+                            })
+                        }
+                    ]
+                },
+                {
+                    title: gettext('Additional Information'),
+                    fields: [
+                        {
+                            view: new AccountSettingsFieldViews.DropdownFieldView({
+                                model: userAccountModel,
+                                title: gettext('Education Completed'),
+                                valueAttribute: 'level_of_education',
+                                options: fieldsData.level_of_education.options,
+                                persistChanges: true
+                            })
+                        },
+                        {
+                            view: new AccountSettingsFieldViews.DropdownFieldView({
+                                model: userAccountModel,
+                                title: gettext('Gender'),
+                                valueAttribute: 'gender',
+                                options: fieldsData.gender.options,
+                                persistChanges: true
+                            })
+                        },
+                        {
+                            view: new AccountSettingsFieldViews.DropdownFieldView({
+                                model: userAccountModel,
+                                title: gettext('Year of Birth'),
+                                valueAttribute: 'year_of_birth',
+                                options: fieldsData.year_of_birth.options,
+                                persistChanges: true
+                            })
+                        },
+                        {
+                            view: new AccountSettingsFieldViews.LanguageProficienciesFieldView({
+                                model: userAccountModel,
+                                title: gettext('Preferred Language'),
+                                valueAttribute: 'language_proficiencies',
+                                options: fieldsData.preferred_language.options,
+                                persistChanges: true
+                            })
+                        }
+                    ]
+                }
+            ];
 
-            var additionalFields = {
-                title: gettext('Additional Information'),
-                fields: []
-            };
-
-            if (fieldsData.country.visibility !== 'hidden') {
-                basicFields.fields.push({
-                    view: new AccountSettingsFieldViews.DropdownFieldView({
-                        model: userAccountModel,
-                        required: true,
-                        title: gettext('Country or Region of Residence'),
-                        valueAttribute: 'country',
-                        options: fieldsData.country.options,
-                        persistChanges: true,
-                        helpMessage: gettext('The country or region where you live.')
-                    })
-                });
-                basicFields.fields.push({
-                    view: new AccountSettingsFieldViews.TimeZoneFieldView({
-                        model: userPreferencesModel,
-                        required: true,
-                        title: gettext('Time Zone'),
-                        valueAttribute: 'time_zone',
-                        helpMessage: gettext('Select the time zone for displaying course dates. If you do not specify a time zone, course dates, including assignment deadlines, will be displayed in your browser\'s local time zone.'), // eslint-disable-line max-len
-                        groupOptions: [{
-                            groupTitle: gettext('All Time Zones'),
-                            selectOptions: fieldsData.time_zone.options,
-                            nullValueOptionLabel: gettext('Default (Local Time Zone)')
-                        }],
-                        persistChanges: true
-                    })
-                });
-            }
-
-            if (fieldsData.level_of_education.visibility !== 'hidden') {
-                additionalFields.fields.push({
-                    view: new AccountSettingsFieldViews.DropdownFieldView({
-                        model: userAccountModel,
-                        title: gettext('Education Completed'),
-                        valueAttribute: 'level_of_education',
-                        options: fieldsData.level_of_education.options,
-                        persistChanges: true
-                    })
-                });
-            }
-            if (fieldsData.gender.visibility !== 'hidden') {
-                additionalFields.fields.push({
-                    view: new AccountSettingsFieldViews.DropdownFieldView({
-                        model: userAccountModel,
-                        title: gettext('Gender'),
-                        valueAttribute: 'gender',
-                        options: fieldsData.gender.options,
-                        persistChanges: true
-                    })
-                });
-            }
-            if (fieldsData.year_of_birth.visibility !== 'hidden') {
-                additionalFields.fields.push({
-                    view: new AccountSettingsFieldViews.DropdownFieldView({
-                        model: userAccountModel,
-                        title: gettext('Year of Birth'),
-                        valueAttribute: 'year_of_birth',
-                        options: fieldsData.year_of_birth.options,
-                        persistChanges: true
-                    })
-                });
-            }
-            additionalFields.fields.push({
-                view: new AccountSettingsFieldViews.LanguageProficienciesFieldView({
-                    model: userAccountModel,
-                    title: gettext('Preferred Language'),
-                    valueAttribute: 'language_proficiencies',
-                    options: fieldsData.preferred_language.options,
-                    persistChanges: true
-                })
-            });
-
-            for (var extendedProfileField in extendedProfileFields) {  // eslint-disable-line guard-for-in, no-restricted-syntax, vars-on-top, max-len
-                //debugger;
+            // Add the extended profile fields
+            var additionalFields = aboutSectionsData[1];
+            for (var field in extendedProfileFields) {  // eslint-disable-line guard-for-in, no-restricted-syntax, vars-on-top, max-len
+                debugger;
                 additionalFields.fields.push({
                     view: new AccountSettingsFieldViews.ExtendedFieldTextFieldView({
                         model: userAccountModel,
-                        title: extendedProfileFields[extendedProfileField],
-                        fieldName: extendedProfileFields[extendedProfileField],
+                        title: extendedProfileFields[field],
+                        fieldName: extendedProfileFields[field],
                         valueAttribute: 'extended_profile',
-                        helpMessage: gettext('extended_profile: ' + extendedProfileFields[extendedProfileField]),
+                        helpMessage: gettext('extended_profile: ' + extendedProfileFields[field]),
                         persistChanges: true
                     })
                 });
@@ -257,23 +251,20 @@
                     }
                 );
             }
-            aboutSectionsData = [basicFields, additionalFields, socialFields];
+            aboutSectionsData.push(socialFields);
 
-            if (fieldsData.country.visibility !== 'hidden') {
-                // set TimeZoneField to listen to CountryField
-                getUserField = function(list, search) {
-                    return _.find(list, function(field) {
-                        return field.view.options.valueAttribute === search;
-                    }).view;
-                };
-                userFields = _.find(aboutSectionsData, function(section) {
-                    return section.title === gettext('Basic Account Information');
-                }).fields;
-                timeZoneDropdownField = getUserField(userFields, 'time_zone');
-                countryDropdownField = getUserField(userFields, 'country');
-                timeZoneDropdownField.listenToCountryView(countryDropdownField);
-            }
-
+            // set TimeZoneField to listen to CountryField
+            getUserField = function(list, search) {
+                return _.find(list, function(field) {
+                    return field.view.options.valueAttribute === search;
+                }).view;
+            };
+            userFields = _.find(aboutSectionsData, function(section) {
+                return section.title === gettext('Basic Account Information');
+            }).fields;
+            timeZoneDropdownField = getUserField(userFields, 'time_zone');
+            countryDropdownField = getUserField(userFields, 'country');
+            timeZoneDropdownField.listenToCountryView(countryDropdownField);
 
             accountsSectionData = [
                 {
