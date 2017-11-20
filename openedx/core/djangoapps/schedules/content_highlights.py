@@ -58,10 +58,10 @@ def get_week_highlights(user, course_key, week_num):
 
 def _get_course_with_highlights(course_key):
     if not COURSE_UPDATE_WAFFLE_FLAG.is_enabled(course_key):
-    raise CourseUpdateDoesNotExist(
-        "%s Course Update Messages waffle flag is disabled.",
-        course_key,
-    )
+        raise CourseUpdateDoesNotExist(
+            "%s Course Update Messages waffle flag is disabled.",
+            course_key,
+        )
 
     course_descriptor = _get_course_descriptor(course_key)
     if not course_descriptor.highlights_enabled_for_messaging:
