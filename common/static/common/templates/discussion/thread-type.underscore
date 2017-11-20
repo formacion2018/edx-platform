@@ -1,15 +1,14 @@
 <div class="post-field">
-    <label class="field-label">
-        <span class="field-label-text">
+    <fieldset class="field-label">
+        <label class="field-label-text">
             <% // Translators: This is the label for a control to select a forum post type %>
             <%- gettext("Post type") %>
-        </span>
+        </label>
         <div class="field-help" id="field_help_post_type">
             <%- gettext("Questions raise issues that need answers. Discussions share ideas and start conversations. (Required)") %>
         </div>
         <div class="field-label">
-            <fieldset class="field-input">
-                <legend class="sr"><%- gettext("Post type") %></legend>
+            <div class="field-input">
                 <label for="<%= form_id %>-post-type-question" class="post-type-label">
                     <input aria-describedby="field_help_post_type" type="radio" name="<%= form_id %>-post-type" class="field-input input-radio" id="<%= form_id %>-post-type-question" value="question">
                     <span class="field-input-label">
@@ -26,7 +25,7 @@
                         <%- gettext("Discussion") %>
                     </span>
                 </label>
-            </fieldset>
+            </div>
         </div>
-    </label>
+    </fieldset>
 </div>
