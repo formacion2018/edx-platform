@@ -114,12 +114,13 @@ class CommonCertificatesTestCase(ModuleStoreTestCase):
             user=self.user,
             course_id=self.course_id,
             mode=CourseMode.HONOR,
+            certificate_available_date=datetime.datetime.today() - datetime.timedelta(days=1),
         )
         CertificateHtmlViewConfigurationFactory.create()
         LinkedInAddToProfileConfigurationFactory.create()
         CourseCompleteImageConfigurationFactory.create()
 
-    def _add_course_certificates(self, count=1, signatory_count=0, is_active=True, available_date=None):
+    def _add_course_certificates(self, count=1, signatory_count=0, is_active=True):
         """
         Create certificate for the course.
         """
@@ -149,10 +150,6 @@ class CommonCertificatesTestCase(ModuleStoreTestCase):
 
         self.course.certificates = {'certificates': certificates}
         self.course.cert_html_view_enabled = True
-        if not available_date:
-            self.course.certificate_available_date = datetime.datetime.today() - datetime.timedelta(days=1)
-        else:
-            self.course.certificate_available_date = available_date
         self.course.save()
         self.store.update_item(self.course, self.user.id)
 
@@ -662,15 +659,27 @@ class CertificatesViewsTests(CommonCertificatesTestCase):
     @override_settings(FEATURES=FEATURES_WITH_CERTS_ENABLED)
     def test_html_view_for_non_viewable_certificate(self):
         """
-        Tests that Certificate HTML Web View returns "Cannot Find Certificate" if certificate has been invalidated.
+        Tests that Certificate HTML Web View returns "Cannot Find Certificate" if certificate is not viewable yet.
         """
-        available_date = datetime.datetime.today() + datetime.timedelta(days=1)
-        self._add_course_certificates(count=1, signatory_count=2, available_date=available_date)
+        test_certificates = [
+            {
+                'id': 0,
+                'name': 'Certificate Name 0',
+                'signatories': [],
+                'version': 1,
+                'is_active': True
+            }
+        ]
+        self.course.certificates = {'certificates': test_certificates}
+        self.course.cert_html_view_enabled = True
+        self.course.certificate_available_date = datetime.datetime.today() + datetime.timedelta(days=1)
+        self.course.save()
+        self.store.update_item(self.course, self.user.id)
+
         test_url = get_certificate_url(
             user_id=self.user.id,
             course_id=unicode(self.course.id)
         )
-
         response = self.client.get(test_url)
         self.assertIn("Invalid Certificate", response.content)
         self.assertIn("Cannot Find Certificate", response.content)
@@ -706,7 +715,6 @@ class CertificatesViewsTests(CommonCertificatesTestCase):
         ]
         self.course.certificates = {'certificates': test_certificates}
         self.course.cert_html_view_enabled = True
-        self.course.certificate_available_date = datetime.datetime.today() - datetime.timedelta(days=1)
         self.course.save()
         self.store.update_item(self.course, self.user.id)
         test_url = get_certificate_url(
@@ -753,7 +761,6 @@ class CertificatesViewsTests(CommonCertificatesTestCase):
         ]
         self.course.certificates = {'certificates': test_certificates}
         self.course.cert_html_view_enabled = True
-        self.course.certificate_available_date = datetime.datetime.today() - datetime.timedelta(days=1)
         self.course.save()
         self.store.update_item(self.course, self.user.id)
 
