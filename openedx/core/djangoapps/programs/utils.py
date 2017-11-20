@@ -466,7 +466,7 @@ class ProgramDataExtender(object):
     def _filter_out_courses_with_entitlements(self, courses):
         course_uuids = set(course['uuid'] for course in courses)
         # Filter the entitlements' modes with a case-insensitive match against applicable seat_types
-        query  = Q(course_uuid__in=course_uuids) & reduce(
+        query = Q(course_uuid__in=course_uuids) & reduce(
             operator.or_, (Q(mode__iexact=seat_type) for seat_type in self.data['applicable_seat_types'])
         )
         entitlements = self.user.courseentitlement_set.filter(query)
