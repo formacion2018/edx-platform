@@ -68,7 +68,7 @@ class MilestonesAndSpecialExamsTransformer(BlockStructureTransformer):
             if usage_info.has_staff_access:
                 return False
             elif self.has_pending_milestones_for_user(block_key, usage_info):
-                return True
+                return False #TODO: tag something here
             elif self.gated_by_required_content(block_key, block_structure, required_content):
                 return True
             elif (settings.FEATURES.get('ENABLE_SPECIAL_EXAMS', False) and
@@ -79,8 +79,8 @@ class MilestonesAndSpecialExamsTransformer(BlockStructureTransformer):
 
         for block_key in block_structure.topological_traversal():
             if user_gated_from_block(block_key):
-                # block_structure.remove_block(block_key, False) #TODO: this is where the block is being removed
-                pass
+                block_structure.remove_block(block_key, False) #TODO: this is where the block is being removed
+                # pass
             elif self.is_special_exam(block_key, block_structure):
                 self.add_special_exam_info(block_key, block_structure, usage_info)
 
